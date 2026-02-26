@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SIMRS Pointer Edition</title>
+
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',sans-serif;}
+
+body{
+background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);
+min-height:100vh;
+padding:20px;
+color:#fff;
+}
+
+.container{max-width:1100px;margin:auto;}
+
+h1{
+text-align:center;
+color:#00d4ff;
+margin-bottom:20px;
+}
+
+.card{
+background:rgba(255,255,255,0.07);
+border-radius:15px;
+padding:25px;
+margin-bottom:20px;
+backdrop-filter:blur(10px);
+border:1px solid rgba(255,255,255,0.15);
+}
+
+.card h2{
+color:#00ff88;
+margin-bottom:15px;
+}
+
+.form-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+gap:15px;
+}
+
+input,select{
+width:100%;
+padding:10px;
+border-radius:8px;
+border:2px solid rgba(255,255,255,0.2);
+background:rgba(0,0,0,0.3);
+color:#fff;
+}
+
+input:focus,select:focus{
+outline:none;
+border-color:#00ff88;
+}
+
+button{
+padding:10px;
+border:none;
+border-radius:8px;
+font-weight:bold;
+cursor:pointer;
+background:linear-gradient(135deg,#00ff88,#00d4ff);
+color:#000;
+}
+
+button:hover{opacity:0.85;}
+
+table{
+width:100%;
+border-collapse:collapse;
+margin-top:15px;
+font-size:14px;
+}
+
+th,td{
+padding:8px;
+border-bottom:1px solid rgba(255,255,255,0.1);
+text-align:center;
+}
+
+th{color:#00ff88;}
+
+.status-darurat{color:#ff4757;font-weight:bold;}
+.status-normal{color:#00ff88;font-weight:bold;}
+
+.pointer-box{
+margin-top:20px;
+background:#0d1117;
+padding:15px;
+border-radius:10px;
+font-size:13px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>🏥 SIMRS – Struct & Pointer Edition</h1>
+
+<div class="card">
+<h2>Input Data Pasien</h2>
+
+<form id="formRS">
+<div class="form-grid">
+
+<input type="text" id="norm" placeholder="No Rekam Medis" required>
+<input type="text" id="nama" placeholder="Nama Pasien" required>
+
+<select id="poli">
+<option>Poli Umum</option>
+<option>Poli Jantung</option>
+<option>Poli Anak</option>
+<option>Poli Saraf</option>
+</select>
+
+<input type="text" id="dokter" placeholder="Nama Dokter" required>
+
+<input type="number" step="0.1" id="suhu" placeholder="Suhu (°C)" required>
+<input type="number" id="td" placeholder="Tekanan Darah" required>
+
+<select id="statusRawat">
+<option>Rawat Jalan</option>
+<option>Rawat Inap</option>
+<option>IGD</option>
+</select>
+
+<input type="number" id="biaya" placeholder="Biaya (Rp)" required>
+
+</div>
+
+<br>
+<button type="submit">Simpan Data</button>
+</form>
+
+<div class="pointer-box" id="pointerBox" style="display:none;"></div>
+
+</div>
+
+<div class="card">
+<h2>Data Pemeriksaan</h2>
+
+<input type="text" id="searchInput" placeholder="Cari NoRM / Nama...">
+
+<table>
+<thead>
+<tr>
+<th>NoRM</th>
+<th>Nama</th>
+<th>Poli</th>
+<th>Dokter</th>
+<th>Suhu</th>
+<th>TD</th>
+<th>Status</th>
+<th>Kondisi</th>
+<th>Biaya</th>
+</tr>
+</thead>
+<tbody id="tabelRS"></tbody>
+</table>
+</div>
+
+</div>
+
+<script>
+
+/* =====================
+   CLASS = STRUCT
+===================== */
+class PasienRS{
+constructor(norm,nama,poli,dokter,suhu,td,statusRawat,biaya){
+this.norm=norm;
+this.nama=nama;
+this.poli=poli;
+this.dokter=dokter;
+this.suhu=suhu;
+this.td=td;
+this.statusRawat=statusRawat;
+this.biaya=biaya;
+}
+
+get kondisi(){
+return (this.suhu>38 || this.td>140) ? "DARURAT" : "Normal";
+}
+}
+
+/* =====================
+   DATABASE (ARRAY)
+===================== */
+const databaseRS=[];
+
+/* =====================
+   RENDER TABLE
+===================== */
+function renderTable(data){
+const tbody=document.getElementById("tabelRS");
+tbody.innerHTML="";
+
+data.forEach(ptr=>{
+tbody.innerHTML+=`
+<tr>
+<td>${ptr.norm}</td>
+<td>${ptr.nama}</td>
+<td>${ptr.poli}</td>
+<td>${ptr.dokter}</td>
+<td>${ptr.suhu}°C</td>
+<td>${ptr.td}</td>
+<td>${ptr.statusRawat}</td>
+<td class="${ptr.kondisi==='DARURAT'?'status-darurat':'status-normal'}">${ptr.kondisi}</td>
+<td>Rp ${ptr.biaya.toLocaleString("id-ID")}</td>
+</tr>`;
+});
+}
+
+/* =====================
+   POINTER DISPLAY
+===================== */
+function tampilkanPointer(ptr){
+document.getElementById("pointerBox").style.display="block";
+document.getElementById("pointerBox").innerHTML=`
+<strong>Pointer Simulation</strong><br><br>
+ptrPasien → Object Memory<br><br>
+{
+norm: ${ptr.norm},<br>
+nama: ${ptr.nama},<br>
+suhu: ${ptr.suhu},<br>
+td: ${ptr.td},<br>
+kondisi: ${ptr.kondisi}
+}
+`;
+}
+
+/* =====================
+   EVENT SUBMIT
+===================== */
+document.getElementById("formRS")
+.addEventListener("submit",function(e){
+
+e.preventDefault();
+
+let pasienBaru=new PasienRS(
+norm.value,
+nama.value,
+poli.value,
+dokter.value,
+parseFloat(suhu.value),
+parseInt(td.value),
+statusRawat.value,
+parseFloat(biaya.value)
+);
+
+// POINTER (reference)
+let ptrPasien=pasienBaru;
+databaseRS.push(ptrPasien);
+
+renderTable(databaseRS);
+tampilkanPointer(ptrPasien);
+
+this.reset();
+});
+
+/* =====================
+   SEARCH
+===================== */
+document.getElementById("searchInput")
+.addEventListener("keyup",function(){
+
+const keyword=this.value.toLowerCase();
+
+const hasil=databaseRS.filter(ptr=>
+ptr.norm.toLowerCase().includes(keyword) ||
+ptr.nama.toLowerCase().includes(keyword)
+);
+
+renderTable(hasil);
+});
+
+</script>
+
+</body>
+</html>
